@@ -78,8 +78,10 @@ def loadbdd():
 	# Pour le token
 	try:
 		with open('token.txt', 'r') as file:
+			global token
 			for line in file:
 				token = line
+				break
 	except FileNotFoundError:
 		return False
 	return True
@@ -116,7 +118,7 @@ async def on_ready():
 async def on_message(message):
 	if message.content[-1] == '&':
 		if message.author.id in preferences and preferences[message.author.id] != "Unknown":
-			information = translator.translate(message.content[:-1], src=preferences[message.author.id])
+			information = translator.translate(message.content[:-1], src=preferences[message.author.id]).text
 			if type(message.channel) == discord.DMChannel:
 				await message.author.send(information)
 			else:
@@ -132,7 +134,7 @@ async def on_message(message):
 	elif message.content.startswith("&<") and message.content[-1] == '>':
 		preferences[message.author.id] = message.content[2:-1]
 		await message.author.send("Your native language has been updated to "+message.content[2:-1]+"! An attempting is going to be written here...")
-		await message.author.send(translator.translate("Everything's ok !", dest=message.content[2:-1], src="en"))
+		await message.author.send(translator.translate("Everything's ok !", dest=message.content[2:-1], src="en").text)
 
 	'''
 	COMMAND SECTION
