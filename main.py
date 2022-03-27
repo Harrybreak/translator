@@ -18,18 +18,19 @@
 	$operateursNom	: nom des utilisateurs possédant les hauts privilèges
 '''
 
-# La fonction de merde mdr
+# Retirer toutes les occurences d'un caracètre dans une chaîne
 def strremove(chaine, c):
 	index = chaine.find(c)
 	while index > -1:
 		chaine = chaine[:index] + chaine[index+1:]
 		index = chaine.find(c)
 	return chaine
-	
+
+# Mettre un item à la fin d'une liste
 def puttoend(liste, item):
 	i = liste.index(item)
 	return liste[:i] + liste[i+1:] + [liste[i]]
-	
+
 # Listes opérateurs (je m'ajoute :D )
 operateurs = []
 operateursNom = []
@@ -37,9 +38,9 @@ operateurs.append(280453752283201536)
 operateursNom.append("Harrybreak")
 
 
-
+# Les bibliothèques
 from math import *
-from translate import Translator
+from googletrans import Translator, constants
 import discord
 import time
 import datetime
@@ -54,6 +55,9 @@ preferences[280453752283201536] = "French"
 # Toute la base de donnée se situe dans le sous-repertoire "bdd" donc allons-y !
 import os
 os.chdir("bdd")
+
+# Le token secret :)
+token = ""
 
 # La fonction de load/reload
 def loadbdd():
@@ -71,6 +75,13 @@ def loadbdd():
 				ligne += 1
 	except FileNotFoundError:
 		open('bdd.txt', 'w').close()
+	# Pour le token
+	try:
+		with open('token.txt', 'r') as file:
+			for line in file:
+				token = line
+	except FileNotFoundError:
+		return False
 	return True
 
 # Elle retourne False ou True selon si l'exécution échoue ou non
@@ -90,6 +101,7 @@ print("Configuration du bot...")
 # Configuration du reboot du bot
 instance_intents = discord.Intents.default()
 instance_intents.members = True
+translator = Translator()
 
 # Reboot du bot
 client = discord.Client(intents=instance_intents)
@@ -104,8 +116,7 @@ async def on_ready():
 async def on_message(message):
 	if message.content[-1] == '&':
 		if message.author.id in preferences and preferences[message.author.id] != "Unknown":
-			data = Translator(from_lang = preferences[message.author.id], to_lang = "English")
-			information = data.translate(message.content[:-1])
+			information = translator.translate(message.content[:-1], src=preferences[message.author.id])
 			if type(message.channel) == discord.DMChannel:
 				await message.author.send(information)
 			else:
@@ -121,8 +132,7 @@ async def on_message(message):
 	elif message.content.startswith("&<") and message.content[-1] == '>':
 		preferences[message.author.id] = message.content[2:-1]
 		await message.author.send("Your native language has been updated to "+message.content[2:-1]+"! An attempting is going to be written here...")
-		data = Translator(to_lang=message.content[2:-1])
-		await message.author.send(data.translate("Everything's ok !"))
+		await message.author.send(translator.translate("Everything's ok !", dest=message.content[2:-1], src="en"))
 
 	'''
 	COMMAND SECTION
@@ -222,7 +232,7 @@ async def on_message(message):
 		
 
 # Run le client
-client.run("ODkwNTk4ODMyMTMwMzc5ODI3.YUyIzA.ACzP45tNj8tNtDUZRJexOvLpe7w")
+client.run(token)
 
 # Lors de l'exécution du client
 print("==========================================================")
