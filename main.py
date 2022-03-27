@@ -118,7 +118,7 @@ async def on_ready():
 async def on_message(message):
 	if message.content[-1] == '&':
 		if message.author.id in preferences and preferences[message.author.id] != "Unknown":
-			information = translator.translate(message.content[:-1], src=preferences[message.author.id]).text
+			information = translator.translate(message.content[:-1], src=preferences[message.author.id], dest="en").text
 			if type(message.channel) == discord.DMChannel:
 				await message.author.send(information)
 			else:
