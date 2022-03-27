@@ -222,7 +222,7 @@ async def on_message(message):
 		
 
 # Run le client
-client.run("ODkwNTk4ODMyMTMwMzc5ODI3.YUyIzA.OQd906unLAB4zzaXYJ66e3JDwNg")
+client.run("ODkwNTk4ODMyMTMwMzc5ODI3.YUyIzA.ACzP45tNj8tNtDUZRJexOvLpe7w")
 
 # Lors de l'exécution du client
 print("==========================================================")
