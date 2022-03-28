@@ -116,26 +116,35 @@ async def on_ready():
 	
 @client.event
 async def on_message(message):
-	if message.content[-1] == '&':
-		if message.author.id in preferences and preferences[message.author.id] != "Unknown":
+	if len(message.content) > 1 and message.content[-1] == '&':
+		if message.author.id in preferences and preferences[message.author.id] != "unknown":
 			information = translator.translate(message.content[:-1], src=preferences[message.author.id], dest="en").text
-			if type(message.channel) == discord.DMChannel:
-				await message.author.send(information)
-			else:
-				await message.channel.send("**__"+message.author.name+" :__** "+information)
+			await message.channel.send("**__"+message.author.name+" :__** "+information)
+			if len(message.content) > 2 and message.content[-2] == '&&':
+				await message.delete()
 		else:
-			preferences[message.author.id] = "Unknown"
-			await message.author.send("Can you please choose first your native language by typing here ``&<*lang*>`` where *lang* is the name of your language **in English!** ?\nYou can get a non exhaustive list of availible languages by typing ``&<>``")
+			preferences[message.author.id] = "unknown"
+			try:
+				await message.author.send("Can you please choose first your native language by typing here ``&<*lang*>`` where *lang* is the name of your language **in English!** ?\nYou can get a non exhaustive list of availible languages by typing ``&<>``")
+			except discord.Forbidden:
+				await message.channel.send("Can you please choose first your native language by typing here ``&<*lang*>`` where *lang* is the name of your language **in English!** ?\nYou can get a non exhaustive list of availible languages by typing ``&<>``")
 	elif message.content == "&<>":
-		information = "The 2 letter ISO is supported : **it**, **en**, **cz**, **fr**, **de**, *etc*...\n"
-		information += "Another formats are also supported !\n"
+		information = "The 2 letter ISO format is supported : **it**, **en**, **cz**, **fr**, **de**, *etc*...\n"
+		information += "Another formats are also supported.\n"
 		information += "When you configure your native language, I test whether I can translate in your language or not :)\n"
-		await message.author.send(information)
+		information += "__Example :__ **&<fr>** to set your native language to 'French' and **Bonjour&** to translate it in English."
+		try:
+			await message.author.send(information)
+		except discord.Forbidden:
+			await message.channel.send(information)
 	elif message.content.startswith("&<") and message.content[-1] == '>':
 		preferences[message.author.id] = message.content[2:-1]
 		await message.author.send("Your native language has been updated to "+message.content[2:-1]+"! An attempting is going to be written here...")
-		await message.author.send(translator.translate("Everything's ok !", dest=message.content[2:-1], src="en").text)
-
+		try:
+			await message.author.send(translator.translate("Everything's ok !", dest=message.content[2:-1], src="en").text)
+		except ValueError:
+			preferences[message.author.id] = "unknown"
+			await message.author.send("**WRONG FORMAT !** Sorry but I can't translate in this language ;-;\nTry another language with ``&<*lang*>`` !")
 	'''
 	COMMAND SECTION
 	'''
@@ -148,7 +157,35 @@ async def on_message(message):
 			information += "``$save``: save server data base\n"
 			information += "``$kill``: kill bot\n"
 			information += "``$test``: debug current snapshot\n"
+			information += "__Here is the common commands list :__\n"
+			information += "``$cmds``: show this command list\n"
+			information += "``$help``: get some help\n"
+			information += "``$info``: get some info about me\n"
 			await message.channel.send(information)
+		elif message.content.split()[0] == "$help":
+			information = "__A brief introduction to Translator bot :__\n"
+			information += "**Translator** is a bot who helps you to communicate with other people in multilingual servers. I can translate everything you say from any language into English. I aim to create better connections between people around the World Wide Web and enhance more international interactions !\n\n"
+			information += "__Starting with me :__\n"
+			information += "> **Translate what you say in English** : end your message with an ampersam ('&') and I'll try to translate it in English (*if you have set your native language first*)\n*You can also delete your message by ending your message with 2 ampersams ('&&') instead of one's.*\n"
+			information += "> **Set your native language** : type ``&<*lang*>`` where *lang* is your native language in the 2 letter ISO Format (https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)\n"
+			information += "> **Still lost ?** : type ``&<>`` to get some examples of usages\n"
+			information += "> **Other features** : the ``$cmds`` command show you what you can do else with me :)\n"
+			information += "\n"
+			information += "**Hope my services are helpful for you and every communities !**"
+			try:
+				await message.author.send(information)
+			except discord.Forbidden:
+				await message.channel.send(information)
+		elif message.content.split()[0] == "$info":
+			information = "__**Translator Discord Bot Bétà 1.0**__\n"
+			information += "__Date of last release :__ 3.28.2022\n"
+			information += "__Date of creation :__ 3.27.2022\n"
+			information += "__Programmer :__ Harrybreak (:email: : harrybreak975@gmail.com)\n"
+			information += "__Source code :__ https://github.com/Harrybreak/translator/releases\n"
+			try:
+				await message.author.send(information)
+			except discord.Forbidden:
+				await message.channel.send(information)
 		## UPGRADE COMMAND (OPÉRATION QUI NÉCESSITE D'ÊTRE OPÉRATEUR)
 		elif message.content.split()[0] == "$upg":
 			if message.author.id in operateurs:
