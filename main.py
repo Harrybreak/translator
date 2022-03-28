@@ -109,7 +109,7 @@ translator = Translator()
 client = discord.Client(intents=instance_intents)
 @client.event
 async def on_ready():
-	data = discord.Game("End your message with an \"&\" and I'll try to translate it in English")
+	data = discord.Game("End your message with an \"&\" and I translate what you say in English")
 	await client.change_presence(activity = data)
 	print("==========================================================")
 	print("Le bot est connecté !")
