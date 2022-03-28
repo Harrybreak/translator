@@ -144,7 +144,12 @@ async def on_message(message):
 			await message.author.send(translator.translate("Everything's ok !", dest=message.content[2:-1], src="en").text)
 		except ValueError:
 			preferences[message.author.id] = "unknown"
-			await message.author.send("**WRONG FORMAT !** Sorry but I can't translate in this language ;-;\nTry another language with ``&<*lang*>`` !")
+			information = "**WRONG FORMAT !** Sorry but I can't translate in this language ;-;\nTry another language with ``&<*lang*>`` !\n"
+			information += "The 2 letter ISO format is supported : **it**, **en**, **cz**, **fr**, **de**, *etc*...\n"
+			information += "Another formats are also supported.\n"
+			information += "When you configure your native language, I test whether I can translate in your language or not :)\n"
+			information += "__Example :__ **&<fr>** to set your native language to 'French' and **Bonjour&** to translate it in English."
+			await message.author.send(information)
 	'''
 	COMMAND SECTION
 	'''
