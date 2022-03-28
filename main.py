@@ -139,9 +139,15 @@ async def on_message(message):
 			await message.channel.send(information)
 	elif message.content.startswith("&<") and message.content[-1] == '>':
 		preferences[message.author.id] = message.content[2:-1]
-		await message.author.send("Your native language has been updated to "+message.content[2:-1]+"! An attempting is going to be written here...")
 		try:
-			await message.author.send(translator.translate("Everything's ok !", dest=message.content[2:-1], src="en").text)
+			await message.author.send("Your native language has been updated to "+message.content[2:-1]+"! An attempting is going to be written here...")
+		except discord.Forbidden:
+			await message.channel.send("Your native language has been updated to "+message.content[2:-1]+"! An attempting is going to be written here...")
+		try:
+			try:
+				await message.author.send(translator.translate("Everything's ok !", dest=message.content[2:-1], src="en").text)
+			except discord.Forbidden:
+				await message.channel.send(translator.translate("Everything's ok !", dest=message.content[2:-1], src="en").text)
 		except ValueError:
 			preferences[message.author.id] = "unknown"
 			information = "**WRONG FORMAT !** Sorry but I can't translate in this language ;-;\nTry another language with ``&<*lang*>`` !\n"
@@ -149,7 +155,10 @@ async def on_message(message):
 			information += "Another formats are also supported.\n"
 			information += "When you configure your native language, I test whether I can translate in your language or not :)\n"
 			information += "__Example :__ **&<fr>** to set your native language to 'French' and **Bonjour&** to translate it in English."
-			await message.author.send(information)
+			try:
+				await message.author.send(information)
+			except discord.Forbidden:
+				await message.channel.send(information)
 	'''
 	COMMAND SECTION
 	'''
