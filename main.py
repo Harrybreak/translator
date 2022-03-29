@@ -95,6 +95,15 @@ def savebdd():
 			ligne += 1
 	return True
 
+# La fonction de tentative d'envoi sur un channel privé
+async def sendto(message, content):
+	try:
+		await message.author.send(content)
+	except discord.Forbidden:
+		await message.channel.send(content)
+	except AttributeError:
+		pass
+
 print("==========================================================")
 print("Lecture des données dans la base de données ...")
 loadbdd()
@@ -116,38 +125,32 @@ async def on_ready():
 	
 @client.event
 async def on_message(message):
+	# Translation
 	if len(message.content) > 1 and message.content[-1] == '&':
 		if message.author.id in preferences and preferences[message.author.id] != "unknown":
-			information = translator.translate(message.content[:-1], src=preferences[message.author.id], dest="en").text
-			await message.channel.send("**__"+message.author.name+" :__** "+information)
-			if len(message.content) > 2 and message.content[-2] == '&&':
+			if len(message.content) > 2 and message.content[-2] == '&':
+				information = translator.translate(message.content[:-2], src=preferences[message.author.id], dest="en").text
+				await message.channel.send("**__"+message.author.name+" :__** "+information)
 				await message.delete()
+			else:
+				information = translator.translate(message.content[:-1], src=preferences[message.author.id], dest="en").text
+				await message.channel.send("**__"+message.author.name+" :__** "+information)
 		else:
 			preferences[message.author.id] = "unknown"
-			try:
-				await message.author.send("Can you please choose first your native language by typing here ``&<*lang*>`` where *lang* is the name of your language **in English!** ?\nYou can get a non exhaustive list of availible languages by typing ``&<>``")
-			except discord.Forbidden:
-				await message.channel.send("Can you please choose first your native language by typing here ``&<*lang*>`` where *lang* is the name of your language **in English!** ?\nYou can get a non exhaustive list of availible languages by typing ``&<>``")
+			await sendto(message, "Can you please choose first your native language by typing here ``&<*lang*>`` where *lang* is the name of your language **in English!** ?\nYou can get a non exhaustive list of availible languages by typing ``&<>``")
+	# Asking for examples of native langs
 	elif message.content == "&<>":
 		information = "The 2 letter ISO format is supported : **it**, **en**, **cz**, **fr**, **de**, *etc*...\n"
-		information += "Another formats are also supported.\n"
+		information += "Other formats are also supported.\n"
 		information += "When you configure your native language, I test whether I can translate in your language or not :)\n"
 		information += "__Example :__ **&<fr>** to set your native language to 'French' and **Bonjour&** to translate it in English."
-		try:
-			await message.author.send(information)
-		except discord.Forbidden:
-			await message.channel.send(information)
+		await sendto(message, information)
+	# Setting native language
 	elif message.content.startswith("&<") and message.content[-1] == '>':
 		preferences[message.author.id] = message.content[2:-1]
+		await sendto(message,"Your native language has been updated to "+message.content[2:-1]+"! An attempting is going to be written here...")
 		try:
-			await message.author.send("Your native language has been updated to "+message.content[2:-1]+"! An attempting is going to be written here...")
-		except discord.Forbidden:
-			await message.channel.send("Your native language has been updated to "+message.content[2:-1]+"! An attempting is going to be written here...")
-		try:
-			try:
-				await message.author.send(translator.translate("Everything's ok !", dest=message.content[2:-1], src="en").text)
-			except discord.Forbidden:
-				await message.channel.send(translator.translate("Everything's ok !", dest=message.content[2:-1], src="en").text)
+			await sendto(message, translator.translate("Everything's ok !", dest=message.content[2:-1], src="en").text)
 		except ValueError:
 			preferences[message.author.id] = "unknown"
 			information = "**WRONG FORMAT !** Sorry but I can't translate in this language ;-;\nTry another language with ``&<*lang*>`` !\n"
@@ -155,10 +158,7 @@ async def on_message(message):
 			information += "Another formats are also supported.\n"
 			information += "When you configure your native language, I test whether I can translate in your language or not :)\n"
 			information += "__Example :__ **&<fr>** to set your native language to 'French' and **Bonjour&** to translate it in English."
-			try:
-				await message.author.send(information)
-			except discord.Forbidden:
-				await message.channel.send(information)
+			await sendto(message, information)
 	'''
 	COMMAND SECTION
 	'''
@@ -175,7 +175,7 @@ async def on_message(message):
 			information += "``$cmds``: show this command list\n"
 			information += "``$help``: get some help\n"
 			information += "``$info``: get some info about me\n"
-			await message.channel.send(information)
+			await sendto(message, information)
 		elif message.content.split()[0] == "$help":
 			information = "__A brief introduction to Translator bot :__\n"
 			information += "**Translator** is a bot who helps you to communicate with other people in multilingual servers. I can translate everything you say from any language into English. I aim to create better connections between people around the World Wide Web and enhance more international interactions !\n\n"
@@ -186,20 +186,14 @@ async def on_message(message):
 			information += "> **Other features** : the ``$cmds`` command show you what you can do else with me :)\n"
 			information += "\n"
 			information += "**Hope my services are helpful for you and every communities !**"
-			try:
-				await message.author.send(information)
-			except discord.Forbidden:
-				await message.channel.send(information)
+			await sendto(message, information)
 		elif message.content.split()[0] == "$info":
 			information = "__**Translator Discord Bot Bétà 1.0**__\n"
 			information += "__Date of last release :__ 3.28.2022\n"
 			information += "__Date of creation :__ 3.27.2022\n"
 			information += "__Programmer :__ Harrybreak (:email: : harrybreak975@gmail.com)\n"
 			information += "__Source code :__ https://github.com/Harrybreak/translator/releases\n"
-			try:
-				await message.author.send(information)
-			except discord.Forbidden:
-				await message.channel.send(information)
+			await sendto(message, information)
 		## UPGRADE COMMAND (OPÉRATION QUI NÉCESSITE D'ÊTRE OPÉRATEUR)
 		elif message.content.split()[0] == "$upg":
 			if message.author.id in operateurs:
