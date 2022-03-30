@@ -104,6 +104,12 @@ async def sendto(message, content):
 	except AttributeError:
 		pass
 
+async def trydelmsg(message):
+	try:
+		await message.delete()
+	except discord.Forbidden:
+		pass
+
 print("==========================================================")
 print("Lecture des données dans la base de données ...")
 loadbdd()
@@ -131,7 +137,7 @@ async def on_message(message):
 			if len(message.content) > 2 and message.content[-2] == '&':
 				information = translator.translate(message.content[:-2], src=preferences[message.author.id], dest="en").text
 				await message.channel.send("**__"+message.author.name+" :__** "+information)
-				await message.delete()
+				await trydelmsg(message)
 			else:
 				information = translator.translate(message.content[:-1], src=preferences[message.author.id], dest="en").text
 				await message.channel.send("**__"+message.author.name+" :__** "+information)
@@ -188,8 +194,8 @@ async def on_message(message):
 			information += "**Hope my services are helpful for you and every communities !**"
 			await sendto(message, information)
 		elif message.content.split()[0] == "$info":
-			information = "__**Translator Discord Bot Bétà 1.0**__\n"
-			information += "__Date of last release :__ 3.28.2022\n"
+			information = "__**Translator Discord Bot Bétà 1.1**__\n"
+			information += "__Date of last release :__ 3.30.2022\n"
 			information += "__Date of creation :__ 3.27.2022\n"
 			information += "__Programmer :__ Harrybreak (:email: : harrybreak975@gmail.com)\n"
 			information += "__Source code :__ https://github.com/Harrybreak/translator/releases\n"
@@ -217,7 +223,6 @@ async def on_message(message):
 					await message.author.send(information)
 			else:
 				await message.author.send("**Permission error** ! This operation requires an elevation.")
-				await message.delete()
 		## DOWNGRADE COMMAND (OPÉRATION QUI NÉCESSITE D'ÊTRE OPÉRATEUR)
 		elif message.content.split()[0] == "$dwng":
 			if message.author.id in operateurs:
@@ -240,7 +245,6 @@ async def on_message(message):
 					await message.author.send(information)
 			else:
 				await message.author.send("**Permission error** ! This operation requires an elevation.")
-				await message.delete()
 		## KILL COMMAND
 		elif message.content.split()[0] == "$kill":
 			if message.author.id in operateurs:
@@ -248,7 +252,6 @@ async def on_message(message):
 				await client.close()
 			else:
 				await message.author.send("**Permission error** ! This operation requires an elevation.")
-				await message.delete()
 		## TEST COMMAND
 		elif message.content.split()[0] == "$test":
 			if message.author.id in operateurs:
@@ -257,7 +260,6 @@ async def on_message(message):
 					await message.attachments[i].save(fp = message.attachments[i].filename)
 			else:
 				await message.author.send("**Permission error** ! This operation requires an elevation.")
-				await message.delete()
 		## SAVE COMMAND
 		# Déclaration des dictionnaires
 		# m : MUSIQUE // d : DESSIN // s : SIMULATION INFORMATIQUE // p : DÉVELOPPEMENT // l : LITTÉRATURE // r : VMM // v : AVD // o : ORIGINAUX
